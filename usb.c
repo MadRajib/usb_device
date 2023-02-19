@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdint.h>
 #include <linux/usb/functionfs.h>
 #include "usb.h"
 
@@ -34,8 +35,8 @@
 
 #define le32_to_cpu(x)  le32toh(x)
 #define le16_to_cpu(x)  le16toh(x)
-/******************** Descriptors and Strings *******************************/
 
+/******************** Descriptors and Strings *******************************/
 
 static const struct {
 	struct usb_functionfs_descs_head_v2 header;
@@ -125,6 +126,9 @@ static const struct {
 	},
 };
 
+msg_t M;
+int ep_nodes[3];
+
 static int init_ep0(const char *ffs_path, int *ep_nodes){
 
 	char *ep_path;
@@ -181,10 +185,151 @@ error:
 	return ret;
 }
 
+static int usb_handle_ep0(int ep0, int *connected)
+{
+	struct usb_functionfs_event event;
+	int ret;
+
+	ret = read(ep0, &event, sizeof(event));
+	if (!ret) {
+		fprintf(stderr, "unable to read event from ep0 %d\n", errno);
+		return -EIO;
+	}
+
+	switch (event.type) {
+	case FUNCTIONFS_SETUP:
+		/* stall for all setuo requests */
+		if (event.u.setup.bRequestType & USB_DIR_IN)
+			ret = write(ep0, NULL, 0);
+		else
+			ret = read(ep0, NULL, 0);
+		break;
+
+	case FUNCTIONFS_ENABLE:
+		*connected = 1;
+		break;
+
+	case FUNCTIONFS_DISABLE:
+		*connected = 0;
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+int usb_recv_msg(int ep, msg_t *msg) {
+	int ret;
+	int len;
+
+	ret = read(ep, &msg->len, sizeof(msg->len));
+	if (ret < sizeof(msg->len)) {
+		fprintf(stderr,"Unable to receive length %d \n", errno);
+		return ret;
+	}
+
+	len = le16toh(msg->len) - 2;
+
+	ret = read(ep, msg->buf, len);
+	if (ret < len) {
+		fprintf(stderr,"Unable to receive buff %d \n", errno);
+		return ret;
+	}
+
+	return ret;
+}
+
+int usb_send_msg(int ep, msg_t *msg) {
+	
+	int len;
+	int ret;
+
+	len = strlen(msg->buf) + 1;
+	msg->len = htole16(len + 2);
+
+	ret = write(ep, &msg->len, sizeof(msg->len));
+	if (ret < 0) {
+		fprintf(stderr, "Unable to send lenght to ep: %d\n", errno);
+		return ret;
+	}
+
+	ret = write(ep, msg->buf, len);
+	if (ret < 0) {
+		fprintf(stderr, "Unable to send buf to ep: %d\n", errno);
+		return ret;
+	}
+
+	return ret;
+}
+
+void usb_chat_loop()
+{
+	int connected = 0;
+	int len;
+	char *buf;
+	int ret;
+
+	printf("Waiting for connection...\n");
+
+	while (1) {
+		printf("Waiting for connection...\n");
+
+		while (!connected) {
+			ret = usb_handle_ep0(ep_nodes[0], &connected);
+			if (ret < 0) {
+				fprintf(stderr, " usb_handle_ep0 %d\n", errno);
+				exit(1);
+			}
+				
+		}
+
+		printf("Chat started.\n");
+		while (connected) {
+			ret = usb_recv_msg(ep_nodes[EP_OUT_IDX], &M);
+			if (ret < 0) {
+				if (ret == -ECONNRESET) {
+					printf("Connection lost.");
+					break;
+				}
+				return;
+			}
+
+			printf("host> %s\n", M.buf);
+
+			printf("device> ");
+			buf = fgets(M.buf, sizeof(M.buf), stdin);
+			if (!buf) {
+				fprintf(stderr, "I/O error in fgets %d\n", errno);
+				return;
+			}
+
+			len = strlen(buf);
+			if (buf[len - 1] == '\n')
+				buf[len - 1] = '\0';
+
+			if (!strcmp(EXIT_COMMAND, M.buf))
+				break;
+
+			ret = usb_send_msg(ep_nodes[EP_IN_IDX], &M);
+			if (ret < 0) {
+				if (ret == -ECONNRESET) {
+					printf("Connection lost.");
+					break;
+				}
+				return;
+			}
+
+		}
+
+	}
+}
+
+
 int usb_init(const char *ffs_path) {
 
 	int ret;
-	int ep_nodes[3];
 
 	ret = init_ep0(ffs_path, ep_nodes);
 
