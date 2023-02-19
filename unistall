@@ -1,0 +1,19 @@
+#!/bin/bash
+
+
+echo "disabling services"
+
+systemctl disable usb-daemon.service
+systemctl disable enable_usb.service
+systemctl disable dev-ffs_usb.mount
+systemctl disable usb-gadget_config.service
+
+echo "removing files"
+
+rm -f /bin/usb_demon
+rm -f /etc/systemd/system/usb-daemon.service
+rm -f /etc/systemd/system/usb-gadget_config.service
+rm -f /etc/system/system/dev-ffs_usb.mount
+rm -f /etc/system/system/enable_usb.service
+rm -f /etc/initscripts/start_usb
+rm -f /etc/initscripts/enable_usb
