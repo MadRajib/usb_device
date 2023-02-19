@@ -1,0 +1,4 @@
+systemctl enable usb-gadget_config.service
+systemctl enable dev-ffs_usb.mount
+systemctl enable enable_usb.service
+systemctl enable usb-daemon.service
