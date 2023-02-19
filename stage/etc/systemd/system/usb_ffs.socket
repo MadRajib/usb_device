@@ -1,0 +1,14 @@
+[Unit]
+Description=USB function fs socket
+Requires=run-ffs_usb.mount
+After=run-ffs_test.mount
+DefaultDependencies=no
+
+[Socket]
+ListenUSBFunction=/dev/ffs-usb
+Service=functionfs-daemon.service
+# we will get to ExecStartPost later
+ExecStartPost=/bin/,enable_usb
+
+[Install]
+WantedBy=usb-gadget.target

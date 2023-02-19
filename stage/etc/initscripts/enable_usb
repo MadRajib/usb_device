@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "binding usb to UDC"
+ls /sys/class/udc > UDC

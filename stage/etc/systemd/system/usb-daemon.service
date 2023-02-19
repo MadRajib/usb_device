@@ -1,0 +1,6 @@
+[Unit]
+Description=USB demon service
+DefaultDependencies=no
+
+[Service]
+ExecStart=/bin/usb_demon
