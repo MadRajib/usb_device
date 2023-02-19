@@ -9,4 +9,4 @@ RemainAfterExit=yes
 Type=oneshot
 
 [Install]
-WantedBy=usb-gadget.target
+WantedBy=multi-user.target

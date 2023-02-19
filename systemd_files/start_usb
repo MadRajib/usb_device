@@ -1,33 +1,25 @@
 #!/bin/bash
 
 echo "Loading libcomposite"
+
 modprobe libcomposite
-
-# go to configfs directory for USB gadgets
-CONFIGFS_ROOT=/sys/kernel/config # adapt to your machine
-
-if [ -d "${CONFIGFS_ROOT}/usb_gadget" ]
-then
-	cd "${CONFIGFS_ROOT}"/usb_gadget
-else
-	echo "configfs not mouted!"
-	exit 1
-fi
-
-# create gadget directory and enter it
+CONFIGFS_ROOT=/sys/kernel/config
+cd "${CONFIGFS_ROOT}"/usb_gadget
 mkdir g1
 cd g1
 
-# USB ids
-echo 0x1d6b > idVendor
-echo 0x104c > idProduct
+echo 0xa4ac > idVendor
+echo 0x0525 > idProduct
 
-# USB strings, optional
-mkdir strings/0x409 # US English, others rarely seen
-echo "Madrajib lab" > strings/0x409/manufacturer
-echo "Raspi USB" > strings/0x409/product
+mkdir strings/0x409
+echo "some Company" > strings/0x409/manufacturer
+echo "frosted Flakes" > strings/0x409/product
+mkdir configs/c.1
+mkdir configs/c.1/strings/0x409
 
-# create the (only) configuration
-mkdir configs/c.1 # dot and number mandatory
+echo "usb_dun" > configs/c.1/strings/0x409/configuration
 mkdir functions/ffs.usb
 ln -s functions/ffs.usb configs/c.1
+
+# wait for some time for daemon-usb to fill the endpoints
+echo "complete"

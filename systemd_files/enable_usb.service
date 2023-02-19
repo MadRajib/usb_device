@@ -1,0 +1,13 @@
+[Unit]
+Description=Enable and Bind USB gadget
+Requires= dev-ffs_usb.mount usb-daemon.service
+After=dev-ffs_usb.mount
+
+[Service]
+ExecStartPre=/bin/sleep 5
+ExecStart=/etc/initscripts/enable_usb
+RemainAfterExit=yes
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

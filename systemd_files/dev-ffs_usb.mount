@@ -7,10 +7,10 @@ Before=ffs.socket
 [Mount]
 # "device" name (FunctionFS instance name)
 What=usb
-Where=/dev/ffs-usb
+Where=/dev/ffs_usb
 Type=functionfs
 Options=defaults
 TimeoutSec=5
 
 [Install]
-WantedBy=usb-gadget.target
+WantedBy=multi-user.target

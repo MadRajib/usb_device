@@ -1,4 +1,7 @@
 #!/bin/bash
 
 echo "binding usb to UDC"
+CONFIGFS_ROOT=/sys/kernel/config # adapt to your machine
+cd "${CONFIGFS_ROOT}"/usb_gadget/g1
+
 ls /sys/class/udc > UDC

@@ -1,9 +1,11 @@
 [Unit]
 Description=USB demon service
+Requires=dev-ffs_usb.mount
+After=dev-ffs_usb.mount
 DefaultDependencies=no
 
 [Service]
-ExecStart=/bin/usb_demon
+ExecStart=/bin/usb_demon /dev/ffs_usb
 
 [Install]
-WantedBy=usb-gadget.target
+WantedBy=multi-user.target
