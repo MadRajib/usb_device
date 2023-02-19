@@ -4,7 +4,7 @@ Requires=sys-kernel-config.mount
 After=sys-kernel-config.mount
 
 [Service]
-ExecStart=/bin/,start_usb
+ExecStart=/etc/initscripts/start_usb
 RemainAfterExit=yes
 Type=oneshot
 
