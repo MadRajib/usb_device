@@ -8,7 +8,7 @@ DefaultDependencies=no
 ListenUSBFunction=/dev/ffs-usb
 Service=functionfs-daemon.service
 # we will get to ExecStartPost later
-ExecStartPost=/bin/,enable_usb
+ExecStartPost=/bin/enable_usb
 
 [Install]
 WantedBy=usb-gadget.target

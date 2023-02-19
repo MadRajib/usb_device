@@ -4,3 +4,6 @@ DefaultDependencies=no
 
 [Service]
 ExecStart=/bin/usb_demon
+
+[Install]
+WantedBy=usb-gadget.target

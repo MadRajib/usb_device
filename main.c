@@ -17,5 +17,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "USB init failed : %d\n", errno);
 	}
 
+	while (1);
+
 	return 0;
 }
